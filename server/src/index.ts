@@ -1,15 +1,25 @@
+import cors from "@elysiajs/cors";
+import { logger } from "@grotto/logysia";
 import { Elysia } from "elysia";
 import { initDb } from "./lib/db";
 import { getConversations } from "./lib/queries";
-import cors from "@elysiajs/cors";
 
 initDb();
 
 const app = new Elysia()
   .use(cors())
+  .use(
+    logger({
+      logIP: false,
+      writer: {
+        write(msg: string) {
+          console.log(msg);
+        },
+      },
+    })
+  )
   .get("/", () => "Hello Elysia")
   .get("/conversations/:userId", ({ params: { userId } }) => {
-    console.log(`Fetching conversations for user ${userId}`);
     const conversations = getConversations(userId);
 
     return conversations;
@@ -17,5 +27,5 @@ const app = new Elysia()
   .listen(3000);
 
 console.log(
-  `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`
+  `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}\n`
 );

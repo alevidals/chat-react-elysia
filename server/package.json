@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "@elysiajs/cors": "^1.2.0",
+    "@grotto/logysia": "^0.1.6",
     "elysia": "latest"
   },
   "devDependencies": {

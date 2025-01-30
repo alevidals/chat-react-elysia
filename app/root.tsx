@@ -5,13 +5,17 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLocation,
+  useNavigate,
 } from "react-router";
 
 import type { Route } from "./+types/root";
 import "./app.css";
 import { Providers, queryClient } from "~/components/providers";
 import { getConversations } from "~/lib/queries";
-import { useConversations } from "~/hooks/use-conversations";
+import { ConversationsList } from "./components/conversations-list";
+import { useEffect } from "react";
+import { Spinner } from "./components/spinner";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -44,126 +48,47 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-export async function clientLoader() {
-  const userId = "1";
+export const USER_ID = "1";
 
+export async function clientLoader() {
   await queryClient.prefetchQuery({
-    queryKey: ["conversations", userId],
-    queryFn: () => getConversations(userId),
+    queryKey: ["conversations", USER_ID],
+    queryFn: () => getConversations(USER_ID),
     staleTime: Infinity,
   });
 }
 
 export default function App() {
-  const { conversations } = useConversations("1");
-  console.log(conversations);
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
 
-  return <Outlet />;
+  useEffect(() => {
+    // add event to listen escape press
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && pathname !== "/") {
+        navigate("/");
+      }
+    };
+
+    window.addEventListener("keydown", handleEscape);
+
+    return () => {
+      window.removeEventListener("keydown", handleEscape);
+    };
+  });
+
+  return (
+    <div className="grid grid-cols-[300px_1fr] h-dvh max-h-dvh">
+      <ConversationsList />
+      <Outlet />
+    </div>
+  );
 }
 
 export function HydrateFallback() {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 200 200"
-        className="w-16 h-16"
-      >
-        <circle
-          fill="#D4D4D8"
-          stroke="#D4D4D8"
-          strokeWidth="15"
-          r="15"
-          cx="35"
-          cy="100"
-        >
-          <animate
-            attributeName="cx"
-            calcMode="spline"
-            dur="2"
-            values="35;165;165;35;35"
-            keySplines="0 .1 .5 1;0 .1 .5 1;0 .1 .5 1;0 .1 .5 1"
-            repeatCount="indefinite"
-            begin="0"
-          ></animate>
-        </circle>
-        <circle
-          fill="#D4D4D8"
-          stroke="#D4D4D8"
-          strokeWidth="15"
-          opacity=".8"
-          r="15"
-          cx="35"
-          cy="100"
-        >
-          <animate
-            attributeName="cx"
-            calcMode="spline"
-            dur="2"
-            values="35;165;165;35;35"
-            keySplines="0 .1 .5 1;0 .1 .5 1;0 .1 .5 1;0 .1 .5 1"
-            repeatCount="indefinite"
-            begin="0.05"
-          ></animate>
-        </circle>
-        <circle
-          fill="#D4D4D8"
-          stroke="#D4D4D8"
-          strokeWidth="15"
-          opacity=".6"
-          r="15"
-          cx="35"
-          cy="100"
-        >
-          <animate
-            attributeName="cx"
-            calcMode="spline"
-            dur="2"
-            values="35;165;165;35;35"
-            keySplines="0 .1 .5 1;0 .1 .5 1;0 .1 .5 1;0 .1 .5 1"
-            repeatCount="indefinite"
-            begin=".1"
-          ></animate>
-        </circle>
-        <circle
-          fill="#D4D4D8"
-          stroke="#D4D4D8"
-          strokeWidth="15"
-          opacity=".4"
-          r="15"
-          cx="35"
-          cy="100"
-        >
-          <animate
-            attributeName="cx"
-            calcMode="spline"
-            dur="2"
-            values="35;165;165;35;35"
-            keySplines="0 .1 .5 1;0 .1 .5 1;0 .1 .5 1;0 .1 .5 1"
-            repeatCount="indefinite"
-            begin=".15"
-          ></animate>
-        </circle>
-        <circle
-          fill="#D4D4D8"
-          stroke="#D4D4D8"
-          strokeWidth="15"
-          opacity=".2"
-          r="15"
-          cx="35"
-          cy="100"
-        >
-          <animate
-            attributeName="cx"
-            calcMode="spline"
-            dur="2"
-            values="35;165;165;35;35"
-            keySplines="0 .1 .5 1;0 .1 .5 1;0 .1 .5 1;0 .1 .5 1"
-            repeatCount="indefinite"
-            begin=".2"
-          ></animate>
-        </circle>
-      </svg>
+      <Spinner />
     </div>
   );
 }

@@ -3,7 +3,7 @@ import { Database } from "bun:sqlite";
 export const db = new Database();
 
 export function initDb() {
-  console.log("⏳ Seeding database...");
+  console.log("👋🏼 Seeding database...");
 
   console.log("🙎 Creating users table...");
 

@@ -1,5 +1,4 @@
-import { Link } from "react-router";
-import type { Route } from "./+types/index";
+import type { Route } from "./+types/_index";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -10,10 +9,8 @@ export function meta({}: Route.MetaArgs) {
 
 export default function Home() {
   return (
-    <div>
-      <h1>Hola</h1>
-      <Link to="/1">Chat 1</Link>
-      <Link to="/2">Chat 2</Link>
+    <div className="flex items-center justify-center">
+      <p>Select a chat to start messaging</p>
     </div>
   );
 }
