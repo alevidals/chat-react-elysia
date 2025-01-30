@@ -2,7 +2,7 @@ import cors from "@elysiajs/cors";
 import { logger } from "@grotto/logysia";
 import { Elysia } from "elysia";
 import { initDb } from "./lib/db";
-import { getConversations } from "./lib/queries";
+import { getConversations, getMessages } from "./lib/queries";
 
 initDb();
 
@@ -24,6 +24,14 @@ const app = new Elysia()
 
     return conversations;
   })
+  .get(
+    "/messages/:conversationId/:senderUserId",
+    ({ params: { conversationId, senderUserId } }) => {
+      const messages = getMessages({ conversationId, senderUserId });
+
+      return messages;
+    }
+  )
   .listen(3000);
 
 console.log(
