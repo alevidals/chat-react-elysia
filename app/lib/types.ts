@@ -13,5 +13,6 @@ export interface Messages {
     id: number;
     isFromMe: boolean;
     content: string;
+    createdAt: string;
   }[];
 }

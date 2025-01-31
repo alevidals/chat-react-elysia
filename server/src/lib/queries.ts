@@ -31,7 +31,7 @@ export function getMessages({
 }: GetMessagesParams) {
   const messages = db
     .query(
-      `SELECT m.id, m.sender_id, m.content, u.id AS receptor_id, u.username AS receptor_username
+      `SELECT m.id, m.created_at, m.sender_id, m.content, u.id AS receptor_id, u.username AS receptor_username
      FROM messages m
      JOIN conversations c ON m.conversation_id = c.id
      JOIN users u ON (u.id = c.user_a_id OR u.id = c.user_b_id) AND u.id != $senderUserId
@@ -57,10 +57,36 @@ export function getMessages({
     id: message.id,
     isFromMe: message.sender_id === Number(senderUserId),
     content: message.content,
+    createdAt: message.created_at,
   }));
 
   return {
     receptor,
     messages: formattedMessages,
   };
+}
+
+export function addMessage({
+  conversationId,
+  senderUserId,
+  content,
+}: {
+  conversationId: string;
+  senderUserId: string;
+  content: string;
+}) {
+  try {
+    db.query(
+      `INSERT INTO messages (conversation_id, sender_id, content)
+     VALUES ($conversationId, $senderUserId, $content)`
+    ).all({
+      $conversationId: Number(conversationId),
+      $senderUserId: Number(senderUserId),
+      $content: content,
+    });
+
+    return true;
+  } catch {
+    return false;
+  }
 }

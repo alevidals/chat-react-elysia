@@ -1,8 +1,8 @@
 import cors from "@elysiajs/cors";
 import { logger } from "@grotto/logysia";
-import { Elysia } from "elysia";
+import { Elysia, t } from "elysia";
 import { initDb } from "./lib/db";
-import { getConversations, getMessages } from "./lib/queries";
+import { addMessage, getConversations, getMessages } from "./lib/queries";
 
 initDb();
 
@@ -30,6 +30,25 @@ const app = new Elysia()
       const messages = getMessages({ conversationId, senderUserId });
 
       return messages;
+    }
+  )
+  .post(
+    "/messages/:conversationId/:senderUserId",
+    ({ params: { conversationId, senderUserId }, body, error }) => {
+      const success = addMessage({
+        conversationId,
+        senderUserId,
+        content: body.content,
+      });
+
+      if (!success) {
+        return error(500, "Failed to send message");
+      }
+    },
+    {
+      body: t.Object({
+        content: t.String(),
+      }),
     }
   )
   .listen(3000);

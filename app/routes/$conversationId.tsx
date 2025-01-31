@@ -1,8 +1,12 @@
 import type { Route } from ".react-router/types/app/routes/+types/$conversationId";
+import { useMutation } from "@tanstack/react-query";
+import { Avatar } from "~/components/avatar";
+import { Chat } from "~/components/chat";
 import { queryClient } from "~/components/providers";
+// import { queryClient } from "~/components/providers";
 import { useMessages } from "~/hooks/use-messages";
-import { getMessages } from "~/lib/queries";
-import { cn } from "~/lib/utils";
+import { addMessage, getMessages } from "~/lib/queries";
+import { getInitials } from "~/lib/utils";
 import { USER_ID } from "~/root";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
@@ -23,40 +27,47 @@ export default function ChatId({
     senderUserId: USER_ID,
   });
 
+  const usernameInitials = getInitials(messages?.receptor.username ?? "");
+
+  const mutation = useMutation({
+    mutationFn: async (content: string) => {
+      await addMessage({
+        conversationId: conversationId,
+        senderUserId: USER_ID,
+        content,
+      });
+    },
+    onSuccess: async () => {
+      await queryClient.refetchQueries({
+        queryKey: ["messages", conversationId, USER_ID],
+      });
+    },
+  });
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key !== "Enter") return;
+
+    const value = (e.target as HTMLInputElement).value.trim();
+
+    if (!value) return;
+
+    mutation.mutate(value);
+    (e.target as HTMLInputElement).value = "";
+  }
+
   return (
-    <div className="border-l border-zinc-800 flex flex-col h-full max-h-dvh">
+    <div className="border-l border-zinc-500 flex flex-col h-full max-h-dvh">
       <div className="bg-zinc-950 h-16 flex items-center p-4 gap-4">
-        <img
-          className="h-10 bg-white rounded-full"
-          src="https://avataaars.io/?avatarStyle=Transparent&topType=ShortHairShortRound&accessoriesType=Blank&hairColor=BrownDark&facialHairType=Blank&clotheType=BlazerShirt&eyeType=Default&eyebrowType=Default&mouthType=Default&skinColor=Light"
-        />
+        <Avatar usernameInitials={usernameInitials} size="SMALL" />
         <span className="text-zinc-100">{messages?.receptor.username}</span>
       </div>
-      <div className="flex-1 overflow-y-scroll p-4">
-        <ul>
-          {messages?.messages.map((message) => (
-            <li
-              key={message.id}
-              className={cn(
-                "flex gap-4",
-                message.isFromMe ? "justify-end" : "justify-start"
-              )}
-            >
-              <div>
-                <span className="text-zinc-100">
-                  {message.isFromMe ? "You" : messages?.receptor.username}:
-                </span>
-                <p className="text-zinc-300">{message.content}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
+      <Chat messages={messages?.messages} />
       <div className="border-t border-zinc-500">
         <input
           type="text"
-          className="h-12 w-full px-4"
-          placeholder="Type a message"
+          className="h-12 px-4 w-full focus:outline-none"
+          placeholder="Type a message..."
+          onKeyDown={handleKeyDown}
         />
       </div>
     </div>

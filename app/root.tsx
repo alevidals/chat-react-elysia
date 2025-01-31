@@ -78,7 +78,7 @@ export default function App() {
   });
 
   return (
-    <div className="grid grid-cols-[300px_1fr] h-dvh max-h-dvh">
+    <div className="grid grid-cols-[26.25rem_1fr] h-dvh max-h-dvh">
       <ConversationsList />
       <Outlet />
     </div>
