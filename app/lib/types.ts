@@ -15,5 +15,6 @@ export interface Messages {
     isFromMe: boolean;
     content: string;
     createdAt: string;
+    isRead: boolean;
   }[];
 }

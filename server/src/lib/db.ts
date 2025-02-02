@@ -56,7 +56,8 @@ export function initDb() {
     conversation_id INTEGER,
     sender_id INTEGER,
     content TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    readed BOOLEAN DEFAULT FALSE
   )
 `
   ).run();

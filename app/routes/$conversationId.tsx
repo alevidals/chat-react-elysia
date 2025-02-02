@@ -7,7 +7,8 @@ import { Chat } from "~/components/chat";
 import { queryClient } from "~/components/providers";
 import { useMessages } from "~/hooks/use-messages";
 import { useWebSocket } from "~/hooks/use-websocket";
-import { addMessage, getMessages } from "~/lib/queries";
+import { addMessage, getMessages, readMessages } from "~/lib/queries";
+import type { Messages } from "~/lib/types";
 import { getInitials } from "~/lib/utils";
 import { USER_ID } from "~/root";
 
@@ -72,17 +73,41 @@ export default function ChatId({
     onMessage((event) => {
       const data = JSON.parse(event.data);
 
-      if (
-        data.type === "newMessage" &&
-        data.conversationId === conversationId &&
-        data.receiverId === Number(USER_ID)
-      ) {
+      if (data.type === "newMessage" && data.receiverId === Number(USER_ID)) {
         queryClient.invalidateQueries({
-          queryKey: ["messages", conversationId, USER_ID],
+          queryKey: ["messages", data.conversationId, USER_ID],
         });
+      } else if (
+        data.type === "readedMessages" &&
+        data.conversationId === conversationId
+      ) {
+        queryClient.setQueryData(
+          ["messages", conversationId, USER_ID],
+          (prevMessages: Messages) => {
+            const updatedMessages = prevMessages.messages.map((message) => {
+              if (data.readedMessages.includes(message.id)) {
+                return {
+                  ...message,
+                  isRead: true,
+                };
+              }
+
+              return message;
+            });
+
+            return {
+              ...prevMessages,
+              messages: updatedMessages,
+            };
+          }
+        );
       }
     });
   }, [conversationId]);
+
+  useEffect(() => {
+    readMessages({ conversationId, senderUserId: USER_ID });
+  }, [messages]);
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key !== "Enter") return;

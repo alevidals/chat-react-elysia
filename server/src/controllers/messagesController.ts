@@ -1,5 +1,5 @@
 import Elysia, { t } from "elysia";
-import { addMessage, getMessages } from "../lib/queries";
+import { addMessage, getMessages, readMessages } from "../lib/queries";
 
 const webSocketMessageSchema = t.Union([
   t.Object({
@@ -59,5 +59,22 @@ export const messagesController = new Elysia()
       body: t.Object({
         content: t.String(),
       }),
+    }
+  )
+  .post(
+    "/messages/:conversationId/:senderUserId/read",
+    ({ params, server }) => {
+      const { conversationId, senderUserId } = params;
+
+      const ids = readMessages({ conversationId, senderUserId });
+
+      server?.publish(
+        "chat",
+        JSON.stringify({
+          type: "readedMessages",
+          conversationId,
+          readedMessages: ids,
+        })
+      );
     }
   );

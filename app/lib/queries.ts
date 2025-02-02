@@ -11,6 +11,11 @@ interface AddMessageParams {
   content: string;
 }
 
+interface ReadMessagesParams {
+  conversationId: string;
+  senderUserId: string;
+}
+
 export async function getConversations(userId: string) {
   const response = await fetch(`http://localhost:3000/conversations/${userId}`);
 
@@ -58,6 +63,24 @@ export async function addMessage({
 
   if (!response.ok) {
     throw new Error("Failed to send message");
+  }
+
+  return true;
+}
+
+export async function readMessages({
+  conversationId,
+  senderUserId,
+}: ReadMessagesParams) {
+  const response = await fetch(
+    `http://localhost:3000/messages/${conversationId}/${senderUserId}/read`,
+    {
+      method: "POST",
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to mark messages as read");
   }
 
   return true;
