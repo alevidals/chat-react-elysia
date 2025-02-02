@@ -17,6 +17,7 @@ import { ConversationsList } from "./components/conversations-list";
 import { useEffect } from "react";
 import { Spinner } from "./components/spinner";
 import { useWebSocket } from "~/hooks/use-websocket";
+import type { Conversation } from "~/lib/types";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -59,7 +60,7 @@ export async function clientLoader() {
   });
 }
 
-const USERS = {
+const USERS: Record<number, string> = {
   1: "Alice-1",
   2: "Bob-2",
   3: "Charlie-3",
@@ -69,6 +70,10 @@ export default function App() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
+  const { onMessage } = useWebSocket({
+    url: "ws://localhost:3000/conversations",
+  });
+
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape" && pathname !== "/") {
@@ -76,16 +81,43 @@ export default function App() {
       }
     };
 
+    onMessage((event) => {
+      const data = JSON.parse(event.data);
+
+      if (data.type === "newMessage") {
+        queryClient.setQueryData(
+          ["conversations", USER_ID],
+          (prevConversation: Conversation[]) => {
+            const updatedConversations = prevConversation.map(
+              (conversation) => {
+                if (String(conversation.id) === data.conversationId) {
+                  return {
+                    ...conversation,
+                    lastMessage: data.content,
+                  };
+                }
+
+                return conversation;
+              }
+            );
+
+            return updatedConversations;
+          }
+        );
+      }
+    });
+
     window.addEventListener("keydown", handleEscape);
 
     return () => {
       window.removeEventListener("keydown", handleEscape);
     };
-  });
+  }, []);
 
+  // TODO --> delete this, it's just for testing purposes
   return (
     <div className="grid grid-cols-[26.25rem_1fr] h-dvh max-h-dvh">
-      <div className="fixed bottom-0 left-0">{USERS[USER_ID]}</div>
+      <div className="fixed bottom-0 left-0">{USERS[USER_ID as number]}</div>
       <ConversationsList />
       <Outlet />
     </div>

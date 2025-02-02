@@ -33,6 +33,10 @@ export default function ChatId({
     url: "ws://localhost:3000/messages",
   });
 
+  const { sendMessage: sendConversationsMessage } = useWebSocket({
+    url: "ws://localhost:3000/conversations",
+  });
+
   const usernameInitials = getInitials(messages?.receptor.username ?? "");
 
   const mutation = useMutation({
@@ -49,6 +53,12 @@ export default function ChatId({
         type: "newMessage",
         receiverId: messages.receptor.id,
         conversationId,
+      });
+
+      sendConversationsMessage({
+        type: "newMessage",
+        conversationId,
+        content,
       });
     },
     onSuccess: async () => {

@@ -1,7 +1,8 @@
+import { useEffect } from "react";
 import { Link, useParams } from "react-router";
 import { Avatar } from "~/components/avatar";
 import { useConversations } from "~/hooks/use-conversations";
-import { useLastMessage } from "~/hooks/use-last-message";
+import { useWebSocket } from "~/hooks/use-websocket";
 import { cn, getInitials } from "~/lib/utils";
 import { USER_ID } from "~/root";
 
@@ -14,11 +15,6 @@ export function ConversationsList() {
     <ul className="bg-zinc-950 flex flex-col gap-2 p-4">
       {conversations?.map((conversation) => {
         const usernameInitials = getInitials(conversation.username);
-
-        const { lastMessage } = useLastMessage({
-          conversationId: String(conversation.id),
-          senderUserId: USER_ID,
-        });
 
         return (
           <li key={conversation.id}>
@@ -43,9 +39,9 @@ export function ConversationsList() {
                   >
                     {conversation.username}
                   </span>
-                  {lastMessage ? (
+                  {conversation.lastMessage ? (
                     <p className="text-zinc-300 truncate">
-                      {lastMessage.content}
+                      {conversation.lastMessage}
                     </p>
                   ) : null}
                 </div>

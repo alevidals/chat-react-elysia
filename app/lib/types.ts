@@ -2,6 +2,7 @@ export interface Conversation {
   id: number;
   userId: number;
   username: string;
+  lastMessage: string;
 }
 
 export interface Messages {

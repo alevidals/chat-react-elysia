@@ -8,16 +8,26 @@ interface GetMessagesParams {
 export function getConversations(userId: string) {
   const query = db.query(
     `
-  SELECT c.id, u.id as userId, u.username
-  FROM conversations c
-  JOIN users u ON u.id = c.user_a_id
-  WHERE c.user_b_id = $userId
-  UNION
-  SELECT c.id, u.id, u.username
-  FROM conversations c
-  JOIN users u ON u.id = c.user_b_id
-  WHERE c.user_a_id = $userId
-`
+    SELECT c.id, u.id as userId, u.username, 
+           (SELECT m.content 
+            FROM messages m 
+            WHERE m.conversation_id = c.id 
+            ORDER BY m.created_at DESC 
+            LIMIT 1) as lastMessage
+    FROM conversations c
+    JOIN users u ON u.id = c.user_a_id
+    WHERE c.user_b_id = $userId
+    UNION
+    SELECT c.id, u.id, u.username, 
+           (SELECT m.content 
+            FROM messages m 
+            WHERE m.conversation_id = c.id 
+            ORDER BY m.created_at DESC 
+            LIMIT 1) as lastMessage
+    FROM conversations c
+    JOIN users u ON u.id = c.user_b_id
+    WHERE c.user_a_id = $userId
+    `
   );
 
   const conversations = query.all({ $userId: userId });
