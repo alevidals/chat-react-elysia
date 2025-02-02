@@ -1,4 +1,7 @@
-import { queryClient } from "~/components/providers";
+import { useQuery } from "@tanstack/react-query";
+import { queryClient } from "~/components/providers/providers";
+import { useWebSocket } from "~/components/providers/websocket-provider";
+import { getMessages } from "~/lib/queries";
 import type { Messages } from "~/lib/types";
 
 interface Props {
@@ -7,11 +10,11 @@ interface Props {
 }
 
 export function useMessages({ conversationId, senderUserId }: Props) {
-  const messages: Messages | undefined = queryClient.getQueryData([
-    "messages",
-    conversationId,
-    senderUserId,
-  ]);
+  const { data: messages } = useQuery({
+    queryKey: ["messages", conversationId, senderUserId],
+    queryFn: () => getMessages({ conversationId, senderUserId }),
+    staleTime: Infinity,
+  });
 
   return { messages };
 }

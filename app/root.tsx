@@ -11,7 +11,7 @@ import {
 
 import type { Route } from "./+types/root";
 import "./app.css";
-import { Providers, queryClient } from "~/components/providers";
+import { Providers, queryClient } from "~/components/providers/providers";
 import { getConversations } from "~/lib/queries";
 import { ConversationsList } from "./components/conversations-list";
 import { useEffect } from "react";
@@ -48,7 +48,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-export const USER_ID = "1";
+export const USER_ID = import.meta.env.VITE_USER_ID;
 
 export async function clientLoader() {
   await queryClient.prefetchQuery({

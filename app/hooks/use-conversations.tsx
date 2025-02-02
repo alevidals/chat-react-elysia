@@ -1,11 +1,12 @@
-import { queryClient } from "~/components/providers";
-import type { Conversation } from "~/lib/types";
+import { useQuery } from "@tanstack/react-query";
+import { getConversations } from "~/lib/queries";
 
 export function useConversations(userId: string) {
-  const conversations: Conversation[] | undefined = queryClient.getQueryData([
-    "conversations",
-    userId,
-  ]);
+  const { data: conversations } = useQuery({
+    queryKey: ["conversations", userId],
+    queryFn: () => getConversations(userId),
+    staleTime: Infinity,
+  });
 
   return { conversations };
 }

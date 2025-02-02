@@ -1,9 +1,10 @@
 import type { Route } from ".react-router/types/app/routes/+types/$conversationId";
 import { useMutation } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { Avatar } from "~/components/avatar";
 import { Chat } from "~/components/chat";
-import { queryClient } from "~/components/providers";
-// import { queryClient } from "~/components/providers";
+import { queryClient } from "~/components/providers/providers";
+import { useWebSocket } from "~/components/providers/websocket-provider";
 import { useMessages } from "~/hooks/use-messages";
 import { addMessage, getMessages } from "~/lib/queries";
 import { getInitials } from "~/lib/utils";
@@ -23,26 +24,54 @@ export default function ChatId({
   params: { conversationId },
 }: Route.ComponentProps) {
   const { messages } = useMessages({
-    conversationId: conversationId,
+    conversationId,
     senderUserId: USER_ID,
   });
 
-  const usernameInitials = getInitials(messages?.receptor.username ?? "");
+  const { sendMessage, socket } = useWebSocket();
+
+  const usernameInitials = getInitials(messages?.receptor.username ?? "A A ");
 
   const mutation = useMutation({
     mutationFn: async (content: string) => {
+      if (!messages) return;
+
       await addMessage({
         conversationId: conversationId,
         senderUserId: USER_ID,
         content,
       });
+
+      sendMessage({
+        type: "newMessage",
+        receiverId: messages.receptor.id,
+        conversationId,
+      });
     },
     onSuccess: async () => {
-      await queryClient.refetchQueries({
+      await queryClient.invalidateQueries({
         queryKey: ["messages", conversationId, USER_ID],
       });
     },
   });
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.addEventListener("message", async (event) => {
+      const data = JSON.parse(event.data);
+
+      if (
+        data.type === "newMessage" &&
+        data.conversationId === conversationId &&
+        data.receiverId === Number(USER_ID)
+      ) {
+        queryClient.invalidateQueries({
+          queryKey: ["messages", conversationId, USER_ID],
+        });
+      }
+    });
+  }, []);
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key !== "Enter") return;
