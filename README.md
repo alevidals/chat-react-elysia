@@ -1,100 +1,38 @@
-# Welcome to React Router!
+# Welcome to ChatReactElysia!
 
-A modern, production-ready template for building full-stack React applications using React Router.
+This is a project to learn and practice (at the moment I write this) [React Router v7](https://reactrouter.com/7.1.5/home), websockets and [Elysia](https://elysiajs.com/) (a Bun framework)
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
+## Prerequisites
 
-## Features
+- Node > 20 version. You can use [fnm](https://github.com/Schniz/fnm) to setup a node version manager.
+- Bun to run the project. [How to install bun](https://bun.sh/docs/installation).
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+## Installation
 
-## Getting Started
+1. Clone the repository
+   ```sh
+   git clone https://github.com/alevidals/chat-react-elysia.git
+   ```
+2. Install client and server dependencies
+   ```sh
+   # go inside the project folder
+   cd chat-react-elysia
+   # install client dependencies
+   bun i
+   # install server dependencies
+   cd server
+   bun i
+   ```
+3. Start both projects
+   ```sh
+   # At this moment you will need 3 terminal instances (one for the server, and the others for clients)
+   # Let's start the server project
+   cd server # if you are not on the server directory
+   bun dev
+   # Let's start the clients projects
+   # To simulate that there are different logged users I have simulate this setting up a environment variable at the dev script
+   bun dev-user-1 # this will start the project as the user 1
+   bun dev-user-2 # this will start the project as the user 2
+   ```
 
-### Installation
-
-Install the dependencies:
-
-```bash
-npm install
-```
-
-### Development
-
-Start the development server with HMR:
-
-```bash
-npm run dev
-```
-
-Your application will be available at `http://localhost:5173`.
-
-## Building for Production
-
-Create a production build:
-
-```bash
-npm run build
-```
-
-## Deployment
-
-### Docker Deployment
-
-This template includes three Dockerfiles optimized for different package managers:
-
-- `Dockerfile` - for npm
-- `Dockerfile.pnpm` - for pnpm
-- `Dockerfile.bun` - for bun
-
-To build and run using Docker:
-
-```bash
-# For npm
-docker build -t my-app .
-
-# For pnpm
-docker build -f Dockerfile.pnpm -t my-app .
-
-# For bun
-docker build -f Dockerfile.bun -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
-```
-
-The containerized application can be deployed to any platform that supports Docker, including:
-
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
-
-### DIY Deployment
-
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
-
-```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
-```
-
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
-
----
-
-Built with ❤️ using React Router.
+## Congrats you can now test the application 🎊🎉

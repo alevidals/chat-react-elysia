@@ -32,7 +32,7 @@ export default function ChatId({
     url: `ws://localhost:3000/messages?conversationId=${conversationId}`,
   });
 
-  const usernameInitials = getInitials(messages?.receptor.username ?? "A A ");
+  const usernameInitials = getInitials(messages?.receptor.username ?? "");
 
   const mutation = useMutation({
     mutationFn: async (content: string) => {
@@ -58,14 +58,6 @@ export default function ChatId({
   });
 
   useEffect(() => {
-    onOpen(() => {
-      sendMessage({
-        type: "newMessage",
-        receiverId: 1,
-        conversationId,
-      });
-    });
-
     onMessage((event) => {
       const data = JSON.parse(event.data);
 
