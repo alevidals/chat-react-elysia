@@ -1,10 +1,9 @@
 import type { Route } from ".react-router/types/app/routes/+types/$conversationId";
 import { useMutation } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Avatar } from "~/components/avatar";
 import { Chat } from "~/components/chat";
 import { queryClient } from "~/components/providers/providers";
-import { useWebSocket } from "~/components/providers/websocket-provider";
 import { useMessages } from "~/hooks/use-messages";
 import { addMessage, getMessages } from "~/lib/queries";
 import { getInitials } from "~/lib/utils";
@@ -28,7 +27,12 @@ export default function ChatId({
     senderUserId: USER_ID,
   });
 
-  const { sendMessage, socket } = useWebSocket();
+  const [socket] = useState(() => {
+    const ws = new WebSocket(
+      `ws://localhost:3000/messages?conversationId=${conversationId}`
+    );
+    return ws;
+  });
 
   const usernameInitials = getInitials(messages?.receptor.username ?? "A A ");
 
@@ -42,11 +46,13 @@ export default function ChatId({
         content,
       });
 
-      sendMessage({
-        type: "newMessage",
-        receiverId: messages.receptor.id,
-        conversationId,
-      });
+      socket.send(
+        JSON.stringify({
+          type: "newMessage",
+          receiverId: messages.receptor.id,
+          conversationId,
+        })
+      );
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({
@@ -57,6 +63,16 @@ export default function ChatId({
 
   useEffect(() => {
     if (!socket) return;
+
+    socket.addEventListener("open", () => {
+      socket.send(
+        JSON.stringify({
+          type: "newMessage",
+          receiverId: 1,
+          conversationId,
+        })
+      );
+    });
 
     socket.addEventListener("message", async (event) => {
       const data = JSON.parse(event.data);

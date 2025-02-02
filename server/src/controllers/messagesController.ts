@@ -1,14 +1,60 @@
 import Elysia, { t } from "elysia";
 import { addMessage, getMessages } from "../lib/queries";
 
+const webSocketMessageSchema = t.Union([
+  t.Object({
+    type: t.Literal("newMessage"),
+    receiverId: t.Number(),
+    conversationId: t.String(),
+  }),
+]);
+
 export const messagesController = new Elysia()
-  .get("/messages/:conversationId/:senderUserId", ({ params }) => {
-    const { conversationId, senderUserId } = params;
+  .ws("/messages", {
+    body: webSocketMessageSchema,
+    query: t.Object({
+      conversationId: t.String(),
+    }),
+    open: (ws) => {
+      const { conversationId } = ws.data.query;
+      ws.subscribe(conversationId);
+    },
+    message: (ws, message) => {
+      const types = {
+        newMessage: () => {
+          const { conversationId, receiverId } = message;
 
-    const messages = getMessages({ conversationId, senderUserId });
+          ws.publish(conversationId, {
+            type: "newMessage",
+            receiverId,
+            conversationId,
+          });
+        },
+      };
 
-    return messages;
+      types[message.type]();
+    },
+    close: (ws) => {
+      const { conversationId } = ws.data.query;
+      ws.unsubscribe(conversationId);
+    },
   })
+  .get(
+    "/messages/:conversationId/:senderUserId",
+    ({ params, server, request }) => {
+      const { conversationId, senderUserId } = params;
+
+      server?.upgrade(request, {
+        data: {
+          conversationId,
+        },
+      });
+
+      const messages = getMessages({ conversationId, senderUserId });
+
+      return messages;
+    }
+  )
   .post(
     "/messages/:conversationId/:senderUserId",
     ({ params, body, error }) => {
