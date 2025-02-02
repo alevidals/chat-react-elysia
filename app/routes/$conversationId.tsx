@@ -1,6 +1,7 @@
 import type { Route } from ".react-router/types/app/routes/+types/$conversationId";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect } from "react";
+import { useParams } from "react-router";
 import { Avatar } from "~/components/avatar";
 import { Chat } from "~/components/chat";
 import { queryClient } from "~/components/providers";
@@ -29,7 +30,7 @@ export default function ChatId({
   });
 
   const { sendMessage, onMessage } = useWebSocket({
-    url: `ws://localhost:3000/messages?conversationId=${conversationId}`,
+    url: "ws://localhost:3000/messages",
   });
 
   const usernameInitials = getInitials(messages?.receptor.username ?? "");
@@ -71,7 +72,7 @@ export default function ChatId({
         });
       }
     });
-  }, []);
+  }, [conversationId]);
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key !== "Enter") return;

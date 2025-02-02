@@ -16,6 +16,7 @@ import { getConversations } from "~/lib/queries";
 import { ConversationsList } from "./components/conversations-list";
 import { useEffect } from "react";
 import { Spinner } from "./components/spinner";
+import { useWebSocket } from "~/hooks/use-websocket";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -58,6 +59,12 @@ export async function clientLoader() {
   });
 }
 
+const USERS = {
+  1: "Alice-1",
+  2: "Bob-2",
+  3: "Charlie-3",
+};
+
 export default function App() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -78,6 +85,7 @@ export default function App() {
 
   return (
     <div className="grid grid-cols-[26.25rem_1fr] h-dvh max-h-dvh">
+      <div className="fixed bottom-0 left-0">{USERS[USER_ID]}</div>
       <ConversationsList />
       <Outlet />
     </div>
