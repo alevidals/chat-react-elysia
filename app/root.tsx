@@ -11,7 +11,7 @@ import {
 
 import type { Route } from "./+types/root";
 import "./app.css";
-import { Providers, queryClient } from "~/components/providers/providers";
+import { Providers, queryClient } from "~/components/providers";
 import { getConversations } from "~/lib/queries";
 import { ConversationsList } from "./components/conversations-list";
 import { useEffect } from "react";
@@ -63,7 +63,6 @@ export default function App() {
   const { pathname } = useLocation();
 
   useEffect(() => {
-    // add event to listen escape press
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape" && pathname !== "/") {
         navigate("/");

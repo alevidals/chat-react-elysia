@@ -1,8 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { queryClient } from "~/components/providers/providers";
-import { useWebSocket } from "~/components/providers/websocket-provider";
 import { getMessages } from "~/lib/queries";
-import type { Messages } from "~/lib/types";
 
 interface Props {
   conversationId: string;

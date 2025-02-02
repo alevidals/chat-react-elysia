@@ -1,10 +1,11 @@
 import type { Route } from ".react-router/types/app/routes/+types/$conversationId";
 import { useMutation } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Avatar } from "~/components/avatar";
 import { Chat } from "~/components/chat";
-import { queryClient } from "~/components/providers/providers";
+import { queryClient } from "~/components/providers";
 import { useMessages } from "~/hooks/use-messages";
+import { useWebSocket } from "~/hooks/use-websocket";
 import { addMessage, getMessages } from "~/lib/queries";
 import { getInitials } from "~/lib/utils";
 import { USER_ID } from "~/root";
@@ -27,11 +28,8 @@ export default function ChatId({
     senderUserId: USER_ID,
   });
 
-  const [socket] = useState(() => {
-    const ws = new WebSocket(
-      `ws://localhost:3000/messages?conversationId=${conversationId}`
-    );
-    return ws;
+  const { onOpen, sendMessage, onMessage } = useWebSocket({
+    url: `ws://localhost:3000/messages?conversationId=${conversationId}`,
   });
 
   const usernameInitials = getInitials(messages?.receptor.username ?? "A A ");
@@ -46,13 +44,11 @@ export default function ChatId({
         content,
       });
 
-      socket.send(
-        JSON.stringify({
-          type: "newMessage",
-          receiverId: messages.receptor.id,
-          conversationId,
-        })
-      );
+      sendMessage({
+        type: "newMessage",
+        receiverId: messages.receptor.id,
+        conversationId,
+      });
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({
@@ -62,19 +58,15 @@ export default function ChatId({
   });
 
   useEffect(() => {
-    if (!socket) return;
-
-    socket.addEventListener("open", () => {
-      socket.send(
-        JSON.stringify({
-          type: "newMessage",
-          receiverId: 1,
-          conversationId,
-        })
-      );
+    onOpen(() => {
+      sendMessage({
+        type: "newMessage",
+        receiverId: 1,
+        conversationId,
+      });
     });
 
-    socket.addEventListener("message", async (event) => {
+    onMessage((event) => {
       const data = JSON.parse(event.data);
 
       if (
