@@ -28,7 +28,7 @@ export default function ChatId({
     senderUserId: USER_ID,
   });
 
-  const { onOpen, sendMessage, onMessage } = useWebSocket({
+  const { sendMessage, onMessage } = useWebSocket({
     url: `ws://localhost:3000/messages?conversationId=${conversationId}`,
   });
 
