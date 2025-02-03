@@ -7,6 +7,7 @@ import {
   ScrollRestoration,
   useLocation,
   useNavigate,
+  useParams,
 } from "react-router";
 
 import type { Route } from "./+types/root";
@@ -17,7 +18,7 @@ import { ConversationsList } from "~/components/conversations-list";
 import { useEffect } from "react";
 import { Spinner } from "~/components/spinner";
 import { useWebSocket } from "~/hooks/use-websocket";
-import type { Conversation } from "~/lib/types";
+import type { Conversation, Messages } from "~/lib/types";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -70,8 +71,14 @@ export default function App() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
-  const { onMessage } = useWebSocket({
+  const { conversationId } = useParams();
+
+  const { onMessage: onConversationMessage } = useWebSocket({
     pathname: "conversations",
+  });
+
+  const { onMessage: onMessagesMessage } = useWebSocket({
+    pathname: "messages",
   });
 
   useEffect(() => {
@@ -81,7 +88,7 @@ export default function App() {
       }
     };
 
-    onMessage((event) => {
+    onConversationMessage((event) => {
       const data = JSON.parse(event.data);
 
       if (data.type === "newMessage") {
@@ -114,9 +121,47 @@ export default function App() {
     };
   }, []);
 
-  // TODO --> delete this, it's just for testing purposes
+  useEffect(() => {
+    onMessagesMessage((event) => {
+      const data = JSON.parse(event.data);
+
+      if (data.type === "newMessage" && data.receiverId === Number(USER_ID)) {
+        queryClient.invalidateQueries({
+          queryKey: ["messages", data.conversationId, USER_ID],
+          // refetchType a all para que actualice los mensajes tanto si están renderizados como no
+          refetchType: "all",
+        });
+      } else if (
+        data.type === "readedMessages" &&
+        data.conversationId === conversationId
+      ) {
+        queryClient.setQueryData(
+          ["messages", conversationId, USER_ID],
+          (prevMessages: Messages) => {
+            const updatedMessages = prevMessages.messages.map((message) => {
+              if (data.readedMessages.includes(message.id)) {
+                return {
+                  ...message,
+                  isRead: true,
+                };
+              }
+
+              return message;
+            });
+
+            return {
+              ...prevMessages,
+              messages: updatedMessages,
+            };
+          }
+        );
+      }
+    });
+  }, [conversationId]);
+
   return (
-    <div className="grid grid-cols-[26.25rem_1fr] h-dvh max-h-dvh">
+    <div className="grid grid-cols-[20rem_1fr] lg:grid-cols-[26.25rem_1fr] h-dvh max-h-dvh">
+      {/* TODO --> delete this, it's just for testing purposes */}
       <div className="fixed bottom-0 left-0">{USERS[USER_ID as number]}</div>
       <ConversationsList />
       <Outlet />

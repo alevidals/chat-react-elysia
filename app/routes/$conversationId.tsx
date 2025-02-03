@@ -69,44 +69,6 @@ export default function ChatId({
   });
 
   useEffect(() => {
-    onMessage((event) => {
-      const data = JSON.parse(event.data);
-
-      if (data.type === "newMessage" && data.receiverId === Number(USER_ID)) {
-        queryClient.invalidateQueries({
-          queryKey: ["messages", data.conversationId, USER_ID],
-          // refetchType a all para que actualice los mensajes tanto si están renderizados como no
-          refetchType: "all",
-        });
-      } else if (
-        data.type === "readedMessages" &&
-        data.conversationId === conversationId
-      ) {
-        queryClient.setQueryData(
-          ["messages", conversationId, USER_ID],
-          (prevMessages: Messages) => {
-            const updatedMessages = prevMessages.messages.map((message) => {
-              if (data.readedMessages.includes(message.id)) {
-                return {
-                  ...message,
-                  isRead: true,
-                };
-              }
-
-              return message;
-            });
-
-            return {
-              ...prevMessages,
-              messages: updatedMessages,
-            };
-          }
-        );
-      }
-    });
-  }, [conversationId]);
-
-  useEffect(() => {
     readMessages({ conversationId, senderUserId: USER_ID });
   }, [messages]);
 
