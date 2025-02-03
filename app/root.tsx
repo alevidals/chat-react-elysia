@@ -10,12 +10,12 @@ import {
 } from "react-router";
 
 import type { Route } from "./+types/root";
-import "./app.css";
+import "~/app.css";
 import { Providers, queryClient } from "~/components/providers";
 import { getConversations } from "~/lib/queries";
-import { ConversationsList } from "./components/conversations-list";
+import { ConversationsList } from "~/components/conversations-list";
 import { useEffect } from "react";
-import { Spinner } from "./components/spinner";
+import { Spinner } from "~/components/spinner";
 import { useWebSocket } from "~/hooks/use-websocket";
 import type { Conversation } from "~/lib/types";
 
@@ -71,7 +71,7 @@ export default function App() {
   const { pathname } = useLocation();
 
   const { onMessage } = useWebSocket({
-    url: "ws://localhost:3000/conversations",
+    pathname: "conversations",
   });
 
   useEffect(() => {

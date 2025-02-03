@@ -1,12 +1,15 @@
 import { useState } from "react";
+import { WEBSOCKET_URL } from "~/lib/env";
 
-type Props = {
-  url: string;
-};
+type Pathname = "conversations" | "messages";
 
-export function useWebSocket({ url }: Props) {
+interface Props {
+  pathname: Pathname;
+}
+
+export function useWebSocket({ pathname }: Props) {
   const [socket] = useState(() => {
-    const ws = new WebSocket(url);
+    const ws = new WebSocket(`${WEBSOCKET_URL}/${pathname}`);
     return ws;
   });
 

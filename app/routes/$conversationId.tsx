@@ -1,7 +1,6 @@
 import type { Route } from ".react-router/types/app/routes/+types/$conversationId";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { useParams } from "react-router";
 import { Avatar } from "~/components/avatar";
 import { Chat } from "~/components/chat";
 import { queryClient } from "~/components/providers";
@@ -31,11 +30,11 @@ export default function ChatId({
   });
 
   const { sendMessage, onMessage } = useWebSocket({
-    url: "ws://localhost:3000/messages",
+    pathname: "messages",
   });
 
   const { sendMessage: sendConversationsMessage } = useWebSocket({
-    url: "ws://localhost:3000/conversations",
+    pathname: "conversations",
   });
 
   const usernameInitials = getInitials(messages?.receptor.username ?? "");

@@ -1,4 +1,5 @@
-import type { Conversation, Messages } from "./types";
+import { API_URL } from "~/lib/env";
+import type { Conversation, Messages } from "~/lib/types";
 
 interface GetMessagesParams {
   conversationId: string;
@@ -17,7 +18,7 @@ interface ReadMessagesParams {
 }
 
 export async function getConversations(userId: string) {
-  const response = await fetch(`http://localhost:3000/conversations/${userId}`);
+  const response = await fetch(`${API_URL}/conversations/${userId}`);
 
   if (!response.ok) {
     throw new Error("Failed to fetch conversations");
@@ -33,7 +34,7 @@ export async function getMessages({
   senderUserId,
 }: GetMessagesParams) {
   const response = await fetch(
-    `http://localhost:3000/messages/${conversationId}/${senderUserId}`
+    `${API_URL}/messages/${conversationId}/${senderUserId}`
   );
 
   if (!response.ok) {
@@ -51,7 +52,7 @@ export async function addMessage({
   content,
 }: AddMessageParams) {
   const response = await fetch(
-    `http://localhost:3000/messages/${conversationId}/${senderUserId}`,
+    `${API_URL}/messages/${conversationId}/${senderUserId}`,
     {
       method: "POST",
       headers: {
@@ -73,7 +74,7 @@ export async function readMessages({
   senderUserId,
 }: ReadMessagesParams) {
   const response = await fetch(
-    `http://localhost:3000/messages/${conversationId}/${senderUserId}/read`,
+    `${API_URL}/messages/${conversationId}/${senderUserId}/read`,
     {
       method: "POST",
     }
