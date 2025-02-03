@@ -57,7 +57,7 @@ export function initDb() {
     sender_id INTEGER,
     content TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    readed BOOLEAN DEFAULT FALSE
+    read BOOLEAN DEFAULT FALSE
   )
 `
   ).run();
@@ -65,23 +65,23 @@ export function initDb() {
   console.log("   Inserting messages...");
 
   db.query(
-    "INSERT INTO messages (conversation_id, sender_id, content) VALUES (?, ?, ?)"
-  ).run(1, 1, "Hello, Bob!");
+    "INSERT INTO messages (conversation_id, sender_id, content, read) VALUES (?, ?, ?, ?)"
+  ).run(1, 1, "Hello, Bob!", 1);
   db.query(
-    "INSERT INTO messages (conversation_id, sender_id, content) VALUES (?, ?, ?)"
-  ).run(1, 2, "Hello, Alice!");
+    "INSERT INTO messages (conversation_id, sender_id, content, read) VALUES (?, ?, ?, ?)"
+  ).run(1, 2, "Hello, Alice!", 1);
   db.query(
-    "INSERT INTO messages (conversation_id, sender_id, content) VALUES (?, ?, ?)"
-  ).run(2, 2, "Hello, Charlie!");
+    "INSERT INTO messages (conversation_id, sender_id, content, read) VALUES (?, ?, ?, ?)"
+  ).run(2, 2, "Hello, Charlie!", 1);
   db.query(
-    "INSERT INTO messages (conversation_id, sender_id, content) VALUES (?, ?, ?)"
-  ).run(2, 3, "Hello, Bob!");
+    "INSERT INTO messages (conversation_id, sender_id, content, read) VALUES (?, ?, ?, ?)"
+  ).run(2, 3, "Hello, Bob!", 1);
   db.query(
-    "INSERT INTO messages (conversation_id, sender_id, content) VALUES (?, ?, ?)"
-  ).run(3, 3, "Hello, Alice!");
+    "INSERT INTO messages (conversation_id, sender_id, content, read) VALUES (?, ?, ?, ?)"
+  ).run(3, 3, "Hello, Alice!", 1);
   db.query(
-    "INSERT INTO messages (conversation_id, sender_id, content) VALUES (?, ?, ?)"
-  ).run(3, 1, "Hello, Charlie!");
+    "INSERT INTO messages (conversation_id, sender_id, content, read) VALUES (?, ?, ?, ?)"
+  ).run(3, 1, "Hello, Charlie!", 1);
 
   console.log("✅ Seeding complete!\n");
 }

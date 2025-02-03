@@ -52,7 +52,7 @@ export function getMessages({
 }: GetMessagesParams) {
   const messages = db
     .query(
-      `SELECT m.id, m.created_at, m.sender_id, m.content, u.id AS receptor_id, u.username AS receptor_username, readed
+      `SELECT m.id, m.created_at, m.sender_id, m.content, u.id AS receptor_id, u.username AS receptor_username, read
      FROM messages m
      JOIN conversations c ON m.conversation_id = c.id
      JOIN users u ON (u.id = c.user_a_id OR u.id = c.user_b_id) AND u.id != $senderUserId
@@ -79,7 +79,7 @@ export function getMessages({
     isFromMe: message.sender_id === Number(senderUserId),
     content: message.content,
     createdAt: message.created_at,
-    isRead: message.readed === 1,
+    isRead: message.read === 1,
   }));
 
   return {
@@ -119,7 +119,7 @@ export function readMessages({
      FROM messages m
      WHERE m.conversation_id = $conversationId
      AND m.sender_id != $senderUserId
-     AND m.readed = 0`
+     AND m.read = 0`
     )
     .all({
       $conversationId: Number(conversationId),
@@ -129,7 +129,7 @@ export function readMessages({
 
   db.query(
     `UPDATE messages
-     SET readed = 1
+     SET read = 1
      WHERE id IN (${messagesIds})`
   ).run();
 

@@ -75,6 +75,8 @@ export default function ChatId({
       if (data.type === "newMessage" && data.receiverId === Number(USER_ID)) {
         queryClient.invalidateQueries({
           queryKey: ["messages", data.conversationId, USER_ID],
+          // refetchType a all para que actualice los mensajes tanto si están renderizados como no
+          refetchType: "all",
         });
       } else if (
         data.type === "readedMessages" &&
