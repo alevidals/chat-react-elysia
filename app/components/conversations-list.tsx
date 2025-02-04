@@ -45,6 +45,12 @@ export function ConversationsList() {
                     </p>
                   ) : null}
                 </div>
+                {conversation.unreadMessages > 0 &&
+                Number(conversationId) !== conversation.id ? (
+                  <span className="flex items-center justify-center bg-blue-400 h-5 w-5 p-3 self-end  ml-auto rounded-full text-xs text-zinc-100">
+                    {conversation.unreadMessages}
+                  </span>
+                ) : null}
               </Link>
             }
           </li>

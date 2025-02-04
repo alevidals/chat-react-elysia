@@ -101,6 +101,7 @@ export default function App() {
                   return {
                     ...conversation,
                     lastMessage: data.content,
+                    unreadMessages: data.unreadMessages ?? 0,
                   };
                 }
 

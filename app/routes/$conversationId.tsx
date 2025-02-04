@@ -7,7 +7,7 @@ import { queryClient } from "~/components/providers";
 import { useMessages } from "~/hooks/use-messages";
 import { useWebSocket } from "~/hooks/use-websocket";
 import { addMessage, getMessages, readMessages } from "~/lib/queries";
-import type { Messages } from "~/lib/types";
+import type { Conversation } from "~/lib/types";
 import { getInitials } from "~/lib/utils";
 import { USER_ID } from "~/root";
 
@@ -29,7 +29,7 @@ export default function ChatId({
     senderUserId: USER_ID,
   });
 
-  const { sendMessage, onMessage } = useWebSocket({
+  const { sendMessage: sendMessagesMessage } = useWebSocket({
     pathname: "messages",
   });
 
@@ -49,7 +49,7 @@ export default function ChatId({
         content,
       });
 
-      sendMessage({
+      sendMessagesMessage({
         type: "newMessage",
         receiverId: messages.receptor.id,
         conversationId,
@@ -59,6 +59,7 @@ export default function ChatId({
         type: "newMessage",
         conversationId,
         content,
+        receiverId: String(messages.receptor.id),
       });
     },
     onSuccess: async () => {
@@ -70,6 +71,24 @@ export default function ChatId({
 
   useEffect(() => {
     readMessages({ conversationId, senderUserId: USER_ID });
+
+    queryClient.setQueryData(
+      ["conversations", USER_ID],
+      (prev: Conversation[]) => {
+        const updated = prev.map((conversation) => {
+          if (conversation.id === Number(conversationId)) {
+            return {
+              ...conversation,
+              unreadMessages: 0,
+            };
+          }
+
+          return conversation;
+        });
+
+        return updated;
+      }
+    );
   }, [messages]);
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {

@@ -3,6 +3,7 @@ export interface Conversation {
   userId: number;
   username: string;
   lastMessage: string;
+  unreadMessages: number;
 }
 
 export interface Messages {

@@ -1,11 +1,12 @@
 import Elysia, { t } from "elysia";
-import { getConversations } from "../lib/queries";
+import { getConversations, getUnreadCount } from "../lib/queries";
 
 const webSocketConversationsSchema = t.Union([
   t.Object({
     type: t.Literal("newMessage"),
     conversationId: t.String(),
     content: t.String(),
+    receiverId: t.String(),
   }),
 ]);
 
@@ -18,12 +19,18 @@ export const conversationsController = new Elysia()
     message: (ws, message) => {
       const types = {
         newMessage: () => {
-          const { conversationId, content } = message;
+          const { conversationId, content, receiverId } = message;
+
+          const unreadMessages = getUnreadCount({
+            conversationId,
+            receiverId,
+          });
 
           ws.publish("conversations", {
             type: "newMessage",
             conversationId,
             content,
+            unreadMessages,
           });
         },
       };

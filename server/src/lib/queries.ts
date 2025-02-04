@@ -16,25 +16,50 @@ interface ReadMessagesParams {
   senderUserId: string;
 }
 
+interface GetUnreadCountParams {
+  conversationId: string;
+  receiverId: string;
+}
+
 export function getConversations(userId: string) {
   const query = db.query(
     `
     SELECT c.id, u.id as userId, u.username, 
-           (SELECT m.content 
-            FROM messages m 
-            WHERE m.conversation_id = c.id 
-            ORDER BY m.created_at DESC 
-            LIMIT 1) as lastMessage
+           (
+             SELECT m.content 
+             FROM messages m 
+             WHERE m.conversation_id = c.id 
+             ORDER BY m.created_at DESC 
+             LIMIT 1
+           ) as lastMessage,
+           (
+             SELECT COUNT(*) 
+             FROM messages m
+             WHERE m.conversation_id = c.id 
+             AND m.sender_id != $userId 
+             AND m.read = FALSE
+           ) as unreadMessages
     FROM conversations c
     JOIN users u ON u.id = c.user_a_id
     WHERE c.user_b_id = $userId
+    
     UNION
+    
     SELECT c.id, u.id, u.username, 
-           (SELECT m.content 
-            FROM messages m 
-            WHERE m.conversation_id = c.id 
-            ORDER BY m.created_at DESC 
-            LIMIT 1) as lastMessage
+           (
+             SELECT m.content 
+             FROM messages m 
+             WHERE m.conversation_id = c.id 
+             ORDER BY m.created_at DESC 
+             LIMIT 1
+           ) as lastMessage,
+           (
+             SELECT COUNT(*) 
+             FROM messages m
+             WHERE m.conversation_id = c.id 
+             AND m.sender_id != $userId 
+             AND m.read = FALSE
+           ) as unreadMessages
     FROM conversations c
     JOIN users u ON u.id = c.user_b_id
     WHERE c.user_a_id = $userId
@@ -42,6 +67,8 @@ export function getConversations(userId: string) {
   );
 
   const conversations = query.all({ $userId: userId });
+
+  console.log(conversations);
 
   return conversations;
 }
@@ -134,4 +161,26 @@ export function readMessages({
   ).run();
 
   return messagesIds;
+}
+
+export function getUnreadCount({
+  conversationId,
+  receiverId,
+}: GetUnreadCountParams) {
+  console.log("ASD", conversationId, receiverId);
+  const count = db
+    .query(
+      `SELECT COUNT(*) as unreadMessages
+     FROM messages
+     WHERE conversation_id = $conversationId
+     AND sender_id != $userId
+     AND read = FALSE`
+    )
+    .get({
+      $conversationId: Number(conversationId),
+      $userId: Number(receiverId),
+      // set as any because this part is not the key of this poc
+    }) as any;
+
+  return count.unreadMessages ?? 0;
 }
