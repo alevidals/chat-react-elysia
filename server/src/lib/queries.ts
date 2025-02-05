@@ -68,8 +68,6 @@ export function getConversations(userId: string) {
 
   const conversations = query.all({ $userId: userId });
 
-  console.log(conversations);
-
   return conversations;
 }
 
@@ -167,7 +165,6 @@ export function getUnreadCount({
   conversationId,
   receiverId,
 }: GetUnreadCountParams) {
-  console.log("ASD", conversationId, receiverId);
   const count = db
     .query(
       `SELECT COUNT(*) as unreadMessages

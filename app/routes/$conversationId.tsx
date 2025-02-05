@@ -1,15 +1,42 @@
 import type { Route } from ".react-router/types/app/routes/+types/$conversationId";
-import { useMutation } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Avatar } from "~/components/avatar";
 import { Chat } from "~/components/chat";
 import { queryClient } from "~/components/providers";
 import { useMessages } from "~/hooks/use-messages";
-import { useWebSocket } from "~/hooks/use-websocket";
-import { addMessage, getMessages, readMessages } from "~/lib/queries";
+import { useSendMessage } from "~/hooks/use-send-message";
+import { getMessages, readMessages } from "~/lib/queries";
 import type { Conversation } from "~/lib/types";
 import { getInitials } from "~/lib/utils";
 import { USER_ID } from "~/root";
+
+interface setReadMessagesParams {
+  conversationId: string;
+  unreadMessages: number;
+}
+
+function setReadMessages({
+  conversationId,
+  unreadMessages,
+}: setReadMessagesParams) {
+  queryClient.setQueryData(
+    ["conversations", USER_ID],
+    (prev: Conversation[]) => {
+      const updated = prev.map((conversation) => {
+        if (conversation.id === Number(conversationId)) {
+          return {
+            ...conversation,
+            unreadMessages,
+          };
+        }
+
+        return conversation;
+      });
+
+      return updated;
+    }
+  );
+}
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const { conversationId } = params;
@@ -24,72 +51,22 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
 export default function ChatId({
   params: { conversationId },
 }: Route.ComponentProps) {
-  const { messages } = useMessages({
+  const messages = useMessages({
     conversationId,
     senderUserId: USER_ID,
   });
 
-  const { sendMessage: sendMessagesMessage } = useWebSocket({
-    pathname: "messages",
-  });
-
-  const { sendMessage: sendConversationsMessage } = useWebSocket({
-    pathname: "conversations",
-  });
-
-  const usernameInitials = getInitials(messages?.receptor.username ?? "");
-
-  const mutation = useMutation({
-    mutationFn: async (content: string) => {
-      if (!messages) return;
-
-      await addMessage({
-        conversationId: conversationId,
-        senderUserId: USER_ID,
-        content,
-      });
-
-      sendMessagesMessage({
-        type: "newMessage",
-        receiverId: messages.receptor.id,
-        conversationId,
-      });
-
-      sendConversationsMessage({
-        type: "newMessage",
-        conversationId,
-        content,
-        receiverId: String(messages.receptor.id),
-      });
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: ["messages", conversationId, USER_ID],
-      });
-    },
+  const sendMessageMutation = useSendMessage({
+    conversationId,
+    receptorId: messages?.receptor.id ?? 0,
   });
 
   useEffect(() => {
     readMessages({ conversationId, senderUserId: USER_ID });
-
-    queryClient.setQueryData(
-      ["conversations", USER_ID],
-      (prev: Conversation[]) => {
-        const updated = prev.map((conversation) => {
-          if (conversation.id === Number(conversationId)) {
-            return {
-              ...conversation,
-              unreadMessages: 0,
-            };
-          }
-
-          return conversation;
-        });
-
-        return updated;
-      }
-    );
+    setReadMessages({ conversationId, unreadMessages: 0 });
   }, [messages]);
+
+  const usernameInitials = getInitials(messages?.receptor.username ?? "");
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key !== "Enter") return;
@@ -98,8 +75,12 @@ export default function ChatId({
 
     if (!value) return;
 
-    mutation.mutate(value);
+    sendMessageMutation.mutate(value);
     (e.target as HTMLInputElement).value = "";
+  }
+
+  function focusOnView(node: HTMLInputElement) {
+    node?.focus();
   }
 
   return (
@@ -111,6 +92,7 @@ export default function ChatId({
       <Chat messages={messages?.messages} />
       <div className="border-t border-zinc-500">
         <input
+          ref={focusOnView}
           type="text"
           className="h-12 px-4 w-full focus:outline-none"
           placeholder="Type a message..."

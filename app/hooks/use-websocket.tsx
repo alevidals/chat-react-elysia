@@ -30,7 +30,6 @@ export function useWebSocket({ pathname }: Props) {
   }
 
   return {
-    // socket,
     sendMessage,
     onOpen,
     onMessage,

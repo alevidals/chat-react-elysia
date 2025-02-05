@@ -61,12 +61,6 @@ export async function clientLoader() {
   });
 }
 
-const USERS: Record<number, string> = {
-  1: "Alice-1",
-  2: "Bob-2",
-  3: "Charlie-3",
-};
-
 export default function App() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -82,12 +76,6 @@ export default function App() {
   });
 
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && pathname !== "/") {
-        navigate("/");
-      }
-    };
-
     onConversationMessage((event) => {
       const data = JSON.parse(event.data);
 
@@ -114,12 +102,6 @@ export default function App() {
         );
       }
     });
-
-    window.addEventListener("keydown", handleEscape);
-
-    return () => {
-      window.removeEventListener("keydown", handleEscape);
-    };
   }, []);
 
   useEffect(() => {
@@ -162,8 +144,6 @@ export default function App() {
 
   return (
     <div className="grid grid-cols-[20rem_1fr] lg:grid-cols-[26.25rem_1fr] h-dvh max-h-dvh">
-      {/* TODO --> delete this, it's just for testing purposes */}
-      <div className="fixed bottom-0 left-0">{USERS[USER_ID as number]}</div>
       <ConversationsList />
       <Outlet />
     </div>

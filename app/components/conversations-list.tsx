@@ -1,13 +1,11 @@
-import { useEffect } from "react";
 import { Link, useParams } from "react-router";
 import { Avatar } from "~/components/avatar";
 import { useConversations } from "~/hooks/use-conversations";
-import { useWebSocket } from "~/hooks/use-websocket";
 import { cn, getInitials } from "~/lib/utils";
 import { USER_ID } from "~/root";
 
 export function ConversationsList() {
-  const { conversations } = useConversations(USER_ID);
+  const conversations = useConversations(USER_ID);
 
   const { conversationId } = useParams();
 

@@ -13,5 +13,5 @@ export function useMessages({ conversationId, senderUserId }: Props) {
     staleTime: Infinity,
   });
 
-  return { messages };
+  return messages;
 }

@@ -8,5 +8,5 @@ export function useConversations(userId: string) {
     staleTime: Infinity,
   });
 
-  return { conversations };
+  return conversations;
 }

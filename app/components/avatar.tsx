@@ -24,7 +24,7 @@ export function Avatar({ usernameInitials, size }: Props) {
 
   return (
     <div className={className}>
-      <span className="text-black font-bold">{usernameInitials}</span>
+      <span className="text-black">{usernameInitials}</span>
     </div>
   );
 }
